@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gtable_py"
-version = "0.1.0"
+version = "0.3.6.9000-c017439"
 description = "Python port of the R gtable package"
 requires-python = ">=3.9"
 license = "MIT"

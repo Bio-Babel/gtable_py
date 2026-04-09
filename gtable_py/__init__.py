@@ -22,7 +22,7 @@ from ._layouts import (
 from ._padding import gtable_add_padding
 from ._trim import gtable_trim
 
-__version__ = "0.1.0"
+__version__ = "0.3.6.9000-c017439"
 
 __all__ = [
     # Core class

@@ -493,17 +493,40 @@ class Gtable(GTree):
             self.vp = VpStack(self.vp, layout_vp)
         return self
 
+    def make_context(self) -> "Gtable":
+        """Set up the layout viewport before it gets pushed.
+
+        Mirrors R's ``makeContext.gtable``: creates a viewport with a
+        GridLayout from widths/heights so child viewports with
+        ``layout_pos_row/col`` can resolve to cell positions.
+        """
+        nrow_gt = len(self._heights) if self._heights is not None else 0
+        ncol_gt = len(self._widths) if self._widths is not None else 0
+        if nrow_gt > 0 and ncol_gt > 0:
+            grid_layout = GridLayout(
+                nrow=nrow_gt, ncol=ncol_gt,
+                widths=self._widths, heights=self._heights,
+                respect=self._respect,
+            )
+            self.vp = Viewport(
+                name=self.name,
+                layout=grid_layout,
+            )
+        return self
+
     def make_content(self) -> "Gtable":
         """Prepare children for rendering.
 
-        Wraps each grob in a grobTree with its own viewport positioned
-        in the layout grid, ordered by z.
+        Mirrors R's ``makeContent.gtable`` (gtable-package.R):
+        wraps each grob in a grobTree with its own child viewport,
+        ordered by z.
 
         Returns
         -------
         Gtable
             Self with children set.
         """
+        # --- Wrap children with layout-positioned viewports
         layout = self._layout
         n = layout_nrow(layout)
         children = []

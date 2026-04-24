@@ -571,6 +571,15 @@ class Gtable(GTree):
 
     def __copy__(self) -> "Gtable":
         new = Gtable.__new__(Gtable)
+        # Shallow-copy every attribute first so user-added attrs survive.
+        # R's gtable mutates ``x`` in-place inside ``gtable_add_grob`` /
+        # ``gtable_add_rows`` / ``gtable_add_cols``, so any class tag or
+        # user attribute attached via ``class(x) <- ...`` or
+        # ``attr(x, ...) <- ...`` persists automatically. The Python
+        # port chose to return a fresh object, so we must reproduce the
+        # same persistence explicitly.
+        new.__dict__.update(self.__dict__)
+        # Then deep-copy / rebuild the owned fields to break aliasing.
         new._grobs = list(self._grobs)
         new._layout = copy.deepcopy(self._layout)
         new._widths = copy.copy(self._widths)

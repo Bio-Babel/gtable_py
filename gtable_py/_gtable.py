@@ -511,20 +511,29 @@ class Gtable(GTree):
     def make_context(self) -> "Gtable":
         """Set up viewport with layout for rendering.
 
-        Returns
-        -------
-        Gtable
-            Self with viewport configured.
+        Mirrors R's ``makeContext.gtable`` (gtable-package.R)::
+
+            layoutvp <- viewport(layout = gtable_layout(x), name = x$name)
+            if (is.null(x$vp)) x$vp <- layoutvp
+            else x$vp <- vpStack(x$vp, layoutvp)
+
+        R's mutation is safe because R passes by value (copy-on-modify);
+        Python passes by reference, so a naive in-place mutation would
+        accumulate stacked layout viewports across repeated draws of the
+        SAME ``Gtable`` object (each pass appending another layout_vp).
+        Operate on a local clone instead: the returned ``Gtable``
+        carries the composed vp without poisoning the original.
         """
         layout_vp = Viewport(
             layout=_gtable_layout(self),
             name=self.name,
         )
+        result = copy.copy(self)
         if self.vp is None:
-            self.vp = layout_vp
+            result.vp = layout_vp
         else:
-            self.vp = VpStack(self.vp, layout_vp)
-        return self
+            result.vp = VpStack(self.vp, layout_vp)
+        return result
 
     def make_content(self) -> "Gtable":
         """Prepare children for rendering.
